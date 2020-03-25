@@ -111,60 +111,72 @@ public class PermissionsService {
                 throw new IllegalTextFormatException("Line elements size is not supported in the current configuration.");
             }
             if (splicedLine[0].equals(LineType.Grupo.name())) {
-                String formattedLine = splicedLine[3].replaceAll("[(\\]\\[]", "");
-                String[] permissions = formattedLine.split("\\),");
-
-                RolePermissions rolePermissions = new RolePermissions();
-                for (String permission : permissions) {
-                    String[] functionalityPermission = permission.replace(")", "").split(",");
-                    if (functionalityPermission.length != 2) {
-                        logger.error("Invalid functionality-permission data, expected format is one Functionality and one Permission.");
-                        throw new IllegalTextFormatException("Too much elements is functionality-permission field");
-                    }
-                    rolePermissions.addPermission(Functionality.valueOf(functionalityPermission[0]),
-                            Permission.valueOf(functionalityPermission[1]));
-                }
-
-                if (splicedLine[1].equals(UserRole.Morador.name())) {
-                    try {
-                        residentPermissions.put(new Integer(splicedLine[2].replaceAll(" ", "")), rolePermissions);
-                    } catch (NumberFormatException e) {
-                        logger.error("Provided id: {}, it's not a valid number", splicedLine[2]);
-                        throw new IllegalFileElementException("Provided id is not a valid number");
-                    }
-                } else if (splicedLine[1].equals(UserRole.Sindico.name())) {
-                    try {
-                        buildingManagerPermissions.put(new Integer(splicedLine[2].replaceAll(" ", "")), rolePermissions);
-                    } catch (NumberFormatException e) {
-                        logger.error("Provided id: {}, it's not a valid number", splicedLine[2]);
-                        throw new IllegalFileElementException("Provided id is not a valid number");
-                    }
-                } else {
-                    throw new IllegalFileElementException("Provided element is not a valid user role.");
-                }
+                handleGroupDataStructuring(splicedLine, residentPermissions, buildingManagerPermissions);
 
             } else if (splicedLine[0].equals(LineType.Usuario.name())) {
-                String formattedLine = splicedLine[2].replaceAll("[(\\]\\[]", "");
-                String[] permissions = formattedLine.split("\\),");
-                String userEmail = splicedLine[1];
+                handleUserDataStructuring(splicedLine, users);
 
-                for (String permission : permissions) {
-                    String[] group = permission.replace(")", "").split(",");
-                    try {
-                        users.add(userEmail, new UserRoles(UserRole.valueOf(group[0]), new Integer(group[1]
-                                .replaceAll(" ", ""))));
-                    } catch (NumberFormatException e) {
-                        logger.error("Provided id: {}, it's not a valid number.", group[1]);
-                        throw new IllegalFileElementException("Provided id is not a valid number");
-                    }
-                }
             } else {
                 logger.error("{}, is not a valid line type", splicedLine[0]);
                 throw new IllegalFileElementException("Provided element is not a valid line identifier.");
             }
         });
+
         logger.info("Data read from text file, proceeding to persist in database.");
         return persistDataInDb(users, residentPermissions, buildingManagerPermissions);
+    }
+
+    private void handleUserDataStructuring(String[] splicedLine, MultiValueMap<String, UserRoles> users) {
+        String formattedLine = splicedLine[2].replaceAll("[(\\]\\[]", "");
+        String[] permissions = formattedLine.split("\\),");
+        String userEmail = splicedLine[1];
+
+        for (String permission : permissions) {
+            String[] group = permission.replace(")", "").split(",");
+            try {
+                users.add(userEmail, new UserRoles(UserRole.valueOf(group[0]), new Integer(group[1]
+                        .replaceAll(" ", ""))));
+            } catch (NumberFormatException e) {
+                logger.error("Provided id: {}, it's not a valid number.", group[1]);
+                throw new IllegalFileElementException("Provided id is not a valid number");
+            }
+        }
+    }
+
+    private void handleGroupDataStructuring(String[] splicedLine,
+                                            Map<Integer, RolePermissions> residentPermissions,
+                                            Map<Integer, RolePermissions> buildingManagerPermissions) {
+        String formattedLine = splicedLine[3].replaceAll("[(\\]\\[]", "");
+        String[] permissions = formattedLine.split("\\),");
+
+        RolePermissions rolePermissions = new RolePermissions();
+        for (String permission : permissions) {
+            String[] functionalityPermission = permission.replace(")", "").split(",");
+            if (functionalityPermission.length != 2) {
+                logger.error("Invalid functionality-permission data, expected format is one Functionality and one Permission.");
+                throw new IllegalTextFormatException("Too much elements is functionality-permission field");
+            }
+            rolePermissions.addPermission(Functionality.valueOf(functionalityPermission[0]),
+                    Permission.valueOf(functionalityPermission[1]));
+        }
+
+        if (splicedLine[1].equals(UserRole.Morador.name())) {
+            try {
+                residentPermissions.put(new Integer(splicedLine[2].replaceAll(" ", "")), rolePermissions);
+            } catch (NumberFormatException e) {
+                logger.error("Provided id: {}, it's not a valid number", splicedLine[2]);
+                throw new IllegalFileElementException("Provided id is not a valid number");
+            }
+        } else if (splicedLine[1].equals(UserRole.Sindico.name())) {
+            try {
+                buildingManagerPermissions.put(new Integer(splicedLine[2].replaceAll(" ", "")), rolePermissions);
+            } catch (NumberFormatException e) {
+                logger.error("Provided id: {}, it's not a valid number", splicedLine[2]);
+                throw new IllegalFileElementException("Provided id is not a valid number");
+            }
+        } else {
+            throw new IllegalFileElementException("Provided element is not a valid user role.");
+        }
     }
 
     private List<User> persistDataInDb(MultiValueMap<String, UserRoles> users,

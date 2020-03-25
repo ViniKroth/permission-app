@@ -6,7 +6,7 @@ services:
     image: mongo:3.6.17-xenial
     restart: always
     networks: 
-      - permissionapp
+      - default
     ports:
      - "27017:27017"
 
@@ -14,19 +14,18 @@ services:
     image: redis:6.0-rc2
     restart: always
     networks: 
-      - permissionapp
+      - default
     ports:
      - "6379:6379"
 
   application:
     image: permission-service
     networks:
-      - permissionapp
+      - default
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"   
+      - "8080:8080"
+        
 
-networks:
-  permissionapp:
