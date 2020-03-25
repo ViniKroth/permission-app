@@ -94,7 +94,6 @@ public class PermissionsService {
         }
     }
 
-    //reads textfile and
     public List<User> buildApplicationData(Stream<String> streamedInput) {
         if (null == streamedInput) {
             logger.error("Provided streamed content is null.");
