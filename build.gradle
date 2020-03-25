@@ -1,0 +1,30 @@
+plugins {
+    id 'org.springframework.boot' version '2.2.5.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+    id 'java'
+}
+
+group = 'com.townsq.vinikroth'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+    implementation 'org.springframework.boot:spring-boot-starter-hateoas'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testCompile group: 'junit', name: 'junit', version: '4.13'
+    testCompile group: 'org.mockito', name: 'mockito-core', version: '3.3.0'
+    compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
+    compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
+    compile group: 'io.github.benas', name: 'random-beans', version: '3.9.0'
+    compile group: 'org.springframework.data', name: 'spring-data-redis', version: '2.2.5.RELEASE'
+    compile group: 'redis.clients', name: 'jedis', version: '3.1.0'
+}
+
+test {
+    useJUnitPlatform()
+}
