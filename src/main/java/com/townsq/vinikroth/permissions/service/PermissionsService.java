@@ -48,14 +48,12 @@ public class PermissionsService {
         try {
             InputStream inputStream = this.getClass().getClassLoader()
                     .getResourceAsStream("basefile.txt");
-
             buildApplicationData(new BufferedReader(new InputStreamReader(inputStream)).lines());
             logger.info("Data correctly loaded from text file.");
         } catch (Exception e) {
             logger.error("An exception occurred while building application data. Application will start," +
                     " but database will not be populated. Error message: {}", e.getMessage());
         }
-
     }
 
     public String findUserPermissionsByEmail(String email) {

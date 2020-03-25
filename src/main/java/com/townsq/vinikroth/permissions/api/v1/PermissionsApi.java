@@ -35,6 +35,9 @@ public class PermissionsApi {
         } catch (IllegalArgumentException e) {
             logger.warn("User email cannot be null");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User email cannot be null");
+        } catch (Exception e) {
+            logger.error("An unexpected error have occurred. Error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error have occurred");
         }
     }
 }
